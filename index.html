@@ -1,34 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sushi Mama Menu</title>
+    <title>SUSHI MAMA MENU</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #f0f0f0; margin: 0; padding: 10px; }
-        .item { background: white; border-radius: 10px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        button { background: #e67e22; color: white; border: none; border-radius: 5px; padding: 5px 15px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; margin: 0; padding-bottom: 80px; }
+        .header { text-align: center; padding: 20px; background: #1e1e1e; border-bottom: 2px solid #e67e22; }
+        
+        /* Стилі вкладок */
+        .tabs { display: flex; justify-content: space-around; background: #1e1e1e; position: sticky; top: 0; z-index: 10; padding: 10px 0; }
+        .tab { color: #888; cursor: pointer; padding: 8px 15px; border-radius: 20px; font-weight: bold; transition: 0.3s; }
+        .tab.active { background: #e67e22; color: white; }
+
+        .container { padding: 15px; display: none; }
+        .container.active { display: block; }
+
+        .card { background: #1e1e1e; border-radius: 12px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
+        .info { flex-grow: 1; margin-right: 10px; }
+        .info b { display: block; font-size: 1.1em; margin-bottom: 4px; }
+        .info span { font-size: 0.85em; color: #aaa; }
+        .price { color: #e67e22; font-weight: bold; margin-top: 5px; }
+        
+        .add-btn { background: #e67e22; color: white; border: none; border-radius: 8px; padding: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h3>🍣 Наше Меню</h3>
-    <div class="item">
-        <span>Сет "Філадельфія" <br><b>499 грн</b></span>
-        <button onclick="addItem()">Додати</button>
-    </div>
-    <div class="item">
-        <span>Рол "Каліфорнія" <br><b>250 грн</b></span>
-        <button onclick="addItem()">Додати</button>
-    </div>
-</body>
+
+<div class="header"><h2>🍣 SUSHI MAMA</h2></div>
+
+<div class="tabs">
+    <div class="tab active" onclick="openTab(event, 'sushi')">Суші</div>
+    <div class="tab" onclick="openTab(event, 'pizza')">Піца</div>
+    <div class="tab" onclick="openTab(event, 'drinks')">Напої</div>
+</div>
+
+<div id="sushi" class="container active">
+    <div class="card"><div class="info"><b>Філадельфія</b><span>300г • Лосось, сир</span><div class="price">249 грн</div></div><button class="add-btn" onclick="addToCart('Філадельфія', 249)">+</button></div>
+    <div class="card"><div class="info"><b>Каліфорнія</b><span>280г • Краб, ікра</span><div class="price">190 грн</div></div><button class="add-btn" onclick="addToCart('Каліфорнія', 190)">+</button></div>
+</div>
+
+<div id="pizza" class="container">
+    <div class="card"><div class="info"><b>Маргарита</b><span>450г • Томати, моцарела</span><div class="price">210 грн</div></div><button class="add-btn" onclick="addToCart('Піца Маргарита', 210)">+</button></div>
+    <div class="card"><div class="info"><b>Чотири Сири</b><span>500г • Пармезан, дорблю</span><div class="price">280 грн</div></div><button class="add-btn" onclick="addToCart('Піца 4 Сири', 280)">+</button></div>
+</div>
+
+<div id="drinks" class="container">
+    <div class="card"><div class="info"><b>Кола</b><span>0.5л</span><div class="price">45 грн</div></div><button class="add-btn" onclick="addToCart('Кола', 45)">+</button></div>
+</div>
+
 <script>
     let tg = window.Telegram.WebApp;
-    tg.expand(); // Розгорнути на весь екран
+    tg.expand();
+    let cart = [];
 
-    function addItem() {
-        tg.MainButton.setText("ПЕРЕЙТИ ДО КОШИКА");
+    function openTab(evt, tabName) {
+        let containers = document.getElementsByClassName("container");
+        for (let c of containers) c.classList.remove("active");
+        let tabs = document.getElementsByClassName("tab");
+        for (let t of tabs) t.classList.remove("active");
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    function addToCart(name, price) {
+        cart.push({name, price});
+        let total = cart.reduce((sum, item) => sum + item.price, 0);
+        tg.MainButton.setText(`ОФОРМИТИ: ${total} грн (${cart.length} шт)`);
         tg.MainButton.show();
     }
+
+    tg.onEvent('mainButtonClicked', function() {
+        let summary = cart.map(item => item.name).join(", ");
+        let totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+        tg.sendData(`Товари: ${summary} | Сума: ${totalPrice} грн`);
+    });
 </script>
+</body>
 </html>
